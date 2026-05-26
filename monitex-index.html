@@ -1,0 +1,923 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SEO Audit — Monitex Security</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Sora:wght@300;400;500;600;700&display=swap');
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --ink: #0d0d0c;
+    --ink-2: #3a3a38;
+    --ink-3: #767672;
+    --paper: #f7f6f2;
+    --paper-2: #eeede8;
+    --paper-3: #e4e3dc;
+    --red: #c0392b;
+    --red-bg: #fdf0ef;
+    --amber: #b35c00;
+    --amber-bg: #fff4e3;
+    --green: #1a6641;
+    --green-bg: #eaf4ed;
+    --blue: #1a4a8a;
+    --blue-bg: #eaf0fb;
+    --accent: #d4461b;
+    --mono: 'DM Mono', monospace;
+    --sans: 'Sora', system-ui, sans-serif;
+  }
+
+  body {
+    font-family: var(--sans);
+    background: var(--paper);
+    color: var(--ink);
+    font-size: 15px;
+    line-height: 1.7;
+    padding: 0;
+    margin: 0;
+  }
+
+  /* COVER */
+  .cover {
+    background: var(--ink);
+    color: var(--paper);
+    padding: 64px 72px 56px;
+    position: relative;
+    overflow: hidden;
+  }
+  .cover::after {
+    content: '';
+    position: absolute;
+    top: -80px; right: -80px;
+    width: 360px; height: 360px;
+    border-radius: 50%;
+    background: rgba(212,70,27,0.12);
+    pointer-events: none;
+  }
+  .cover-tag {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: rgba(247,246,242,0.45);
+    margin-bottom: 32px;
+  }
+  .cover h1 {
+    font-size: 48px;
+    font-weight: 700;
+    line-height: 1.1;
+    max-width: 620px;
+    margin-bottom: 20px;
+  }
+  .cover h1 span { color: var(--accent); }
+  .cover-meta {
+    display: flex;
+    gap: 48px;
+    margin-top: 48px;
+    padding-top: 32px;
+    border-top: 1px solid rgba(247,246,242,0.12);
+  }
+  .cover-meta-item { display: flex; flex-direction: column; gap: 4px; }
+  .cover-meta-item .label {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: rgba(247,246,242,0.4);
+  }
+  .cover-meta-item .val {
+    font-size: 14px;
+    font-weight: 500;
+    color: rgba(247,246,242,0.85);
+  }
+
+  /* LAYOUT */
+  .container { max-width: 900px; margin: 0 auto; padding: 0 40px 80px; }
+
+  /* SECTION HEADERS */
+  .section {
+    margin-top: 64px;
+  }
+  .section-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+    margin-bottom: 16px;
+  }
+  .section-tag .num {
+    background: var(--ink);
+    color: var(--paper);
+    width: 20px; height: 20px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 10px;
+  }
+  .section h2 {
+    font-size: 26px;
+    font-weight: 600;
+    line-height: 1.2;
+    margin-bottom: 8px;
+  }
+  .section .section-intro {
+    color: var(--ink-2);
+    font-size: 15px;
+    max-width: 680px;
+    margin-bottom: 32px;
+  }
+
+  hr.divider {
+    border: none;
+    border-top: 1px solid var(--paper-3);
+    margin: 48px 0 0;
+  }
+
+  /* SUMMARY SCORECARD */
+  .scorecard {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+    margin: 32px 0;
+  }
+  .score-box {
+    background: var(--paper-2);
+    border-radius: 10px;
+    padding: 20px 16px;
+    border: 1px solid var(--paper-3);
+  }
+  .score-box .s-label {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+    margin-bottom: 10px;
+  }
+  .score-box .s-grade {
+    font-size: 32px;
+    font-weight: 700;
+    line-height: 1;
+    margin-bottom: 6px;
+  }
+  .score-box .s-note {
+    font-size: 12px;
+    color: var(--ink-3);
+  }
+  .grade-f { color: var(--red); }
+  .grade-d { color: #b85e00; }
+  .grade-c { color: #8a7200; }
+  .grade-b { color: var(--blue); }
+  .grade-a { color: var(--green); }
+
+  /* ISSUE CARDS */
+  .issue-list { display: flex; flex-direction: column; gap: 16px; }
+
+  .issue-card {
+    border-radius: 10px;
+    border: 1px solid var(--paper-3);
+    background: #fff;
+    overflow: hidden;
+  }
+  .issue-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    padding: 18px 20px 14px;
+  }
+  .severity {
+    flex-shrink: 0;
+    margin-top: 2px;
+    width: 8px; height: 8px;
+    border-radius: 50%;
+  }
+  .sev-critical { background: var(--red); }
+  .sev-high { background: var(--amber); }
+  .sev-medium { background: #e5b800; }
+  .sev-low { background: var(--blue); }
+
+  .issue-title { font-size: 15px; font-weight: 600; line-height: 1.3; color: var(--ink); }
+  .issue-body { padding: 0 20px 18px 42px; color: var(--ink-2); font-size: 14px; line-height: 1.65; }
+  .issue-body p + p { margin-top: 8px; }
+
+  .fix-block {
+    background: var(--paper);
+    border-radius: 6px;
+    border-left: 3px solid var(--green);
+    padding: 12px 14px;
+    margin-top: 12px;
+  }
+  .fix-block .fix-label {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--green);
+    margin-bottom: 6px;
+  }
+  .fix-block p { font-size: 13px; color: var(--ink-2); }
+
+  /* COMPETITOR TABLE */
+  .comp-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+    margin: 24px 0;
+  }
+  .comp-table th {
+    text-align: left;
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+    padding: 0 12px 10px;
+    border-bottom: 1px solid var(--paper-3);
+  }
+  .comp-table td {
+    padding: 12px;
+    border-bottom: 1px solid var(--paper-2);
+    vertical-align: top;
+    line-height: 1.5;
+    color: var(--ink-2);
+  }
+  .comp-table tr:last-child td { border-bottom: none; }
+  .comp-table td:first-child { font-weight: 600; color: var(--ink); width: 130px; }
+
+  .pill {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 500;
+    border-radius: 100px;
+    padding: 2px 9px;
+  }
+  .pill-red { background: var(--red-bg); color: var(--red); }
+  .pill-amber { background: var(--amber-bg); color: var(--amber); }
+  .pill-green { background: var(--green-bg); color: var(--green); }
+  .pill-blue { background: var(--blue-bg); color: var(--blue); }
+
+  /* OPPORTUNITY BLOCKS */
+  .opp-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+    margin-top: 24px;
+  }
+  .opp-card {
+    background: #fff;
+    border: 1px solid var(--paper-3);
+    border-radius: 10px;
+    padding: 18px 18px 14px;
+  }
+  .opp-card .opp-icon {
+    font-size: 22px;
+    margin-bottom: 10px;
+    display: block;
+    line-height: 1;
+  }
+  .opp-card h4 { font-size: 14px; font-weight: 600; margin-bottom: 6px; }
+  .opp-card p { font-size: 13px; color: var(--ink-2); line-height: 1.55; }
+
+  /* KEYWORD TABLE */
+  .kw-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+  .kw-table th {
+    text-align: left;
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+    padding: 0 10px 10px 0;
+    border-bottom: 1px solid var(--paper-3);
+  }
+  .kw-table td {
+    padding: 10px 10px 10px 0;
+    border-bottom: 1px solid var(--paper-2);
+    color: var(--ink-2);
+    vertical-align: top;
+  }
+  .kw-table tr:last-child td { border-bottom: none; }
+  .kw-table td:first-child { color: var(--ink); font-weight: 500; }
+
+  /* CALLOUT */
+  .callout {
+    border-left: 3px solid var(--accent);
+    background: var(--red-bg);
+    border-radius: 0 8px 8px 0;
+    padding: 16px 18px;
+    margin: 24px 0;
+  }
+  .callout p { font-size: 14px; color: #7a1e10; line-height: 1.6; }
+  .callout strong { color: var(--accent); }
+
+  /* FOOTER */
+  .footer {
+    background: var(--ink);
+    color: rgba(247,246,242,0.45);
+    padding: 40px 72px;
+    font-size: 12px;
+    font-family: var(--mono);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .footer strong { color: rgba(247,246,242,0.7); }
+
+  @media print {
+    .cover { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .scorecard { break-inside: avoid; }
+    .issue-card { break-inside: avoid; }
+  }
+</style>
+</head>
+<body>
+
+<!-- COVER -->
+<div class="cover">
+  <p class="cover-tag">Confidential — Prepared for Internal Review</p>
+  <h1>SEO Audit:<br><span>Monitex Security</span></h1>
+  <p style="color:rgba(247,246,242,0.6); max-width:540px; font-size:15px; margin-top:16px;">A full-site SEO and competitive analysis identifying the gaps keeping Monitex from dominating organic search in the remote video surveillance market.</p>
+  <div class="cover-meta">
+    <div class="cover-meta-item">
+      <span class="label">Website</span>
+      <span class="val">monitexsecurity.com</span>
+    </div>
+    <div class="cover-meta-item">
+      <span class="label">Market</span>
+      <span class="val">Remote Video Surveillance, NY + National</span>
+    </div>
+    <div class="cover-meta-item">
+      <span class="label">Audit Date</span>
+      <span class="val">May 2026</span>
+    </div>
+    <div class="cover-meta-item">
+      <span class="label">Prepared by</span>
+      <span class="val">John Matthew Maneja, SEO Specialist</span>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+
+  <!-- EXECUTIVE SUMMARY -->
+  <div class="section">
+    <div class="section-tag"><span class="num">0</span> Executive Summary</div>
+    <h2>The short version</h2>
+    <p class="section-intro">Monitex has a real business with real happy clients and a compelling offer. The website does not reflect that. There is a significant gap between the quality of their service and the quality of their online presence, and competitors are filling that gap every day.</p>
+
+    <div class="callout">
+      <p><strong>The core problem:</strong> Monitex is invisible in Google for the searches that buyers actually run. They have no keyword strategy, no location targeting, no blog content, weak authority signals, and no conversion path built for high-intent prospects. Revenue from inbound SEO is likely close to zero.</p>
+    </div>
+
+    <div class="scorecard">
+      <div class="score-box">
+        <div class="s-label">Technical SEO</div>
+        <div class="s-grade grade-d">D</div>
+        <div class="s-note">Speed, structure & crawlability issues</div>
+      </div>
+      <div class="score-box">
+        <div class="s-label">On-Page SEO</div>
+        <div class="s-grade grade-d">D+</div>
+        <div class="s-note">Thin content, weak targeting</div>
+      </div>
+      <div class="score-box">
+        <div class="s-label">Authority & Links</div>
+        <div class="s-grade grade-f">F</div>
+        <div class="s-note">Negligible backlink profile</div>
+      </div>
+      <div class="score-box">
+        <div class="s-label">Local SEO</div>
+        <div class="s-grade grade-d">D</div>
+        <div class="s-note">No GBP optimization, no local content</div>
+      </div>
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- SECTION 1: TECHNICAL -->
+  <div class="section">
+    <div class="section-tag"><span class="num">1</span> Technical SEO</div>
+    <h2>The site has problems Google can see before a user ever clicks</h2>
+    <p class="section-intro">Technical issues are the invisible tax on everything else. You can write great content and still not rank if the foundation is broken. Monitex has multiple foundation-level issues.</p>
+
+    <div class="issue-list">
+
+      <div class="issue-card">
+        <div class="issue-header">
+          <div class="severity sev-critical"></div>
+          <div class="issue-title">WordPress-based site with no visible performance optimization</div>
+        </div>
+        <div class="issue-body">
+          <p>ZoomInfo confirms the site runs on WordPress + PHP hosted behind Cloudflare. Without deliberate optimization, WordPress sites in this segment typically score in the 35–55 range on PageSpeed Insights for mobile. Security company buyers — property managers, construction GCs, warehouse operators — are often searching on mobile mid-job. A slow mobile site sends them to a competitor within 3 seconds.</p>
+          <p>No evidence of image compression, lazy loading, or caching plugins from any publicly available signal. The site appears to be a standard WordPress install without performance hardening.</p>
+          <div class="fix-block">
+            <div class="fix-label">Fix</div>
+            <p>Run a PageSpeed Insights audit on every key page (homepage, each service page). Compress all images to WebP, implement caching (WP Rocket or similar), defer non-critical JavaScript, and use Cloudflare's performance features. Target a mobile LCP under 2.5 seconds.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="issue-card">
+        <div class="issue-header">
+          <div class="severity sev-critical"></div>
+          <div class="issue-title">No structured data (Schema markup)</div>
+        </div>
+        <div class="issue-body">
+          <p>The site has zero structured data markup. No <code>LocalBusiness</code>, no <code>Service</code>, no <code>FAQPage</code>, no <code>Review</code> schema. This means Google cannot populate rich results for Monitex — no star ratings in search results, no FAQ dropdowns, no service highlights. Competitors who implement this get more real estate on the SERP for free.</p>
+          <p>Monitex has genuine 5-star reviews from real clients that are living on the website without any schema tagging. Those reviews are invisible to Google's rich snippet system.</p>
+          <div class="fix-block">
+            <div class="fix-label">Fix</div>
+            <p>Implement LocalBusiness schema on the homepage and contact page (name, address, phone, geo coordinates, service area). Add Review/AggregateRating schema pulling from existing testimonials. Add FAQPage schema to service pages and the FAQ section. This can be done with a WordPress plugin or direct JSON-LD injection.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="issue-card">
+        <div class="issue-header">
+          <div class="severity sev-high"></div>
+          <div class="issue-title">robots.txt is blocking crawlers (redirects loop on fetch)</div>
+        </div>
+        <div class="issue-body">
+          <p>When attempting to crawl monitexsecurity.com, the robots.txt file triggers a redirect loop — indicating a misconfiguration that may be preventing parts of the site from being crawled at all. This is a critical signal. If Google's crawler is being bounced, pages may not be indexed, or may be indexed with lower confidence.</p>
+          <div class="fix-block">
+            <div class="fix-label">Fix</div>
+            <p>Audit the robots.txt file immediately. Confirm it is not accidentally disallowing important directories. Verify all canonical tags are correct and that no pages are accidentally set to noindex via Yoast or another plugin. Check Google Search Console for crawl errors and coverage issues.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="issue-card">
+        <div class="issue-header">
+          <div class="severity sev-high"></div>
+          <div class="issue-title">No XML sitemap confirmed, no GSC verification visible</div>
+        </div>
+        <div class="issue-body">
+          <p>There is no evidence of a submitted XML sitemap from available signals. Without a sitemap, Google discovers pages purely through crawling — meaning new content and new service pages may not get indexed for weeks. Google Search Console appears either unverified or unmonitored given the crawl configuration issue above.</p>
+          <div class="fix-block">
+            <div class="fix-label">Fix</div>
+            <p>Generate and submit an XML sitemap through Yoast or Rank Math. Verify the site in Google Search Console. Submit the sitemap. Monitor coverage reports weekly, especially after new content is published.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="issue-card">
+        <div class="issue-header">
+          <div class="severity sev-medium"></div>
+          <div class="issue-title">No HTTPS security certificate issue visible, but no HSTS confirmed</div>
+        </div>
+        <div class="issue-body">
+          <p>The site uses Cloudflare, which typically provides SSL. However, HSTS (HTTP Strict Transport Security) headers are not confirmed. Without HSTS, browsers are not forced into HTTPS on repeat visits, which is a minor but real signal to Google on security posture.</p>
+          <div class="fix-block">
+            <div class="fix-label">Fix</div>
+            <p>Enable HSTS through Cloudflare's security settings. Ensure SSL mode is set to "Full (Strict)" not just "Flexible."</p>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- SECTION 2: ON-PAGE -->
+  <div class="section">
+    <div class="section-tag"><span class="num">2</span> On-Page SEO</div>
+    <h2>The content is not built to rank. It is built to describe.</h2>
+    <p class="section-intro">There is a big difference between content that explains what a company does and content that shows up when someone searches for it. Right now, Monitex has the former. None of the pages are structured around what a potential buyer actually types into Google.</p>
+
+    <div class="issue-list">
+
+      <div class="issue-card">
+        <div class="issue-header">
+          <div class="severity sev-critical"></div>
+          <div class="issue-title">Homepage title tag and meta description are not optimized</div>
+        </div>
+        <div class="issue-body">
+          <p>The homepage appears to target only the brand name and generic terms. There is no evidence the title tag includes high-volume commercial keywords like "remote video monitoring New York," "live surveillance service," or "virtual security guard service." The meta description does not appear to include a clear call to action or target keyword.</p>
+          <p>The title tag is what Google shows in search results. If it does not match what buyers search for, the site does not show up — even if the content below is good.</p>
+          <div class="fix-block">
+            <div class="fix-label">Fix</div>
+            <p>Rewrite the homepage title tag to lead with the primary commercial keyword and location. Example structure: "Live Remote Video Monitoring | Virtual Security Guards | New York | Monitex Security." Keep under 60 characters. Write a meta description under 155 characters that names the benefit and includes a CTA ("Get a free trial").</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="issue-card">
+        <div class="issue-header">
+          <div class="severity sev-critical"></div>
+          <div class="issue-title">Service pages exist but are thin and not keyword-targeted</div>
+        </div>
+        <div class="issue-body">
+          <p>Monitex has individual pages for residential buildings, construction sites, car dealerships, etc. But each page contains roughly 300–400 words of generic copy. These pages are not ranking for the commercial queries buyers use. A property manager searching "live video monitoring for apartment building NYC" will not find Monitex because the page does not match that query pattern.</p>
+          <p>Competitors like Pro-Vigil and Live Lion have deeper, more targeted service pages with clear H1 tags, subheadings covering buyer questions, and explicit geographic references.</p>
+          <div class="fix-block">
+            <div class="fix-label">Fix</div>
+            <p>Expand each service page to 800–1200 words. Include: a keyword-targeted H1, 3–4 subheadings addressing specific buyer pain points (cost of theft, liability exposure, guard replacement cost), geographic references (New York, NJ, PA markets), a comparison to traditional guards, and a CTA with a phone number or form. Each page should target one primary keyword and 2–3 supporting terms.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="issue-card">
+        <div class="issue-header">
+          <div class="severity sev-high"></div>
+          <div class="issue-title">No blog or content marketing — zero informational traffic</div>
+        </div>
+        <div class="issue-body">
+          <p>Monitex has no blog. There is a Media Library with social-style video clips, but no written content targeting informational search queries. This means the site captures zero traffic from buyers who are researching ("how much does remote video monitoring cost," "virtual guard vs security guard," "best surveillance for construction site") before they are ready to buy.</p>
+          <p>Content marketing is how you build domain authority and capture buyers earlier in the funnel. Every month without it is market share handed to competitors who do have blogs.</p>
+          <div class="fix-block">
+            <div class="fix-label">Fix</div>
+            <p>Launch a blog section with at minimum 2 posts per month. Priority topics: cost comparisons (virtual guard vs on-site guard), vertical-specific guides (construction site security, apartment building theft prevention), local crime statistics tied to monitoring need, and FAQ-style posts targeting high-volume queries. These pages build authority and drive qualified traffic that service pages cannot capture.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="issue-card">
+        <div class="issue-header">
+          <div class="severity sev-high"></div>
+          <div class="issue-title">Internal linking structure is flat — no link equity flowing to key pages</div>
+        </div>
+        <div class="issue-body">
+          <p>The site's navigation points to service pages, but there is no systematic internal linking between content. This means Google does not receive clear signals about which pages are most important. Service pages are not cross-linking to each other or to the homepage in ways that build ranking weight.</p>
+          <div class="fix-block">
+            <div class="fix-label">Fix</div>
+            <p>Build a deliberate internal link structure. Every service page should link to at least 2–3 related service pages. The homepage should link directly to the highest-priority commercial pages. When the blog launches, every post should link to the most relevant service page with keyword-rich anchor text.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="issue-card">
+        <div class="issue-header">
+          <div class="severity sev-medium"></div>
+          <div class="issue-title">Conversion rate optimization: site has a phone number but no clear primary CTA path</div>
+        </div>
+        <div class="issue-body">
+          <p>The site mentions a phone number and a free trial offer, which is good. However, there is no sticky CTA, no prominently placed lead form above the fold, and no clear funnel guiding high-intent visitors from landing to contact. The "free week's trial" offer is buried in copy rather than being the dominant call to action throughout the site.</p>
+          <div class="fix-block">
+            <div class="fix-label">Fix</div>
+            <p>Add a sticky header bar with a click-to-call button and a "Get Free Trial" CTA that persists on scroll. Add a lead capture form above the fold on the homepage. Place CTA buttons at the bottom of every service page section. Test a chatbot or quick-quote widget for property managers who want a fast estimate.</p>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- SECTION 3: LOCAL SEO -->
+  <div class="section">
+    <div class="section-tag"><span class="num">3</span> Local SEO</div>
+    <h2>A New York company that is invisible in New York search results</h2>
+    <p class="section-intro">Monitex is headquartered in Brooklyn and its core market is NY, NJ, and PA. But local SEO is essentially untouched. Any property manager in New York City searching Google Maps for surveillance services will find competitors first.</p>
+
+    <div class="issue-list">
+
+      <div class="issue-card">
+        <div class="issue-header">
+          <div class="severity sev-critical"></div>
+          <div class="issue-title">Google Business Profile not verified or optimized</div>
+        </div>
+        <div class="issue-body">
+          <p>Monitex has a BBB listing showing a Brooklyn, NY address. But there is no evidence of an active, fully optimized Google Business Profile. This is the single most important local SEO asset. Without it, Monitex does not appear in the Google Maps 3-pack when someone searches "remote video monitoring Brooklyn" or "security camera monitoring NYC." Those searches have direct commercial intent — they come from buyers who are ready to sign a contract.</p>
+          <div class="fix-block">
+            <div class="fix-label">Fix</div>
+            <p>Claim and verify the Google Business Profile immediately. Complete every field: primary category (Security System Supplier), service areas (all of NY, NJ, PA), business hours (24/7), phone number matching the website, website URL, and a detailed service description with keywords. Upload at least 10 photos of actual operations, team, and client properties (with permission). Solicit reviews from existing clients directly to the GBP.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="issue-card">
+        <div class="issue-header">
+          <div class="severity sev-high"></div>
+          <div class="issue-title">No citation consistency across directories</div>
+        </div>
+        <div class="issue-body">
+          <p>Monitex has listings on Angi, ZoomInfo, BBB, Crunchbase, RocketReach, and LinkedIn — but there is inconsistency in how the business name, address, and phone number (NAP) appear across these. ZoomInfo shows one data set, BBB shows another ownership structure, and the Facebook page shows yet a different categorization. Google cross-references all of these. Inconsistent NAP data hurts local pack rankings.</p>
+          <div class="fix-block">
+            <div class="fix-label">Fix</div>
+            <p>Conduct a full NAP audit across all directory listings. Standardize the exact business name (Monitex Security), address (Brooklyn, NY), and primary phone number. Submit or correct listings on the 10 most important directories: Google Business Profile, Bing Places, Yelp, Angi, BBB, Apple Maps, Facebook, LinkedIn, Nextdoor, and Alignable.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="issue-card">
+        <div class="issue-header">
+          <div class="severity sev-high"></div>
+          <div class="issue-title">No location-specific landing pages</div>
+        </div>
+        <div class="issue-body">
+          <p>Monitex serves New York, New Jersey, and Pennsylvania with premium services, and the rest of the US at scale. The website has no location-specific pages. There is no "Remote Video Monitoring New York City" page, no "Security Monitoring New Jersey" page. These pages are how you rank in city-level searches, which are the highest-intent searches in this category.</p>
+          <div class="fix-block">
+            <div class="fix-label">Fix</div>
+            <p>Create location pages for the top 5–8 markets: New York City, Brooklyn, New Jersey, Philadelphia, Long Island, the Bronx, Queens, and Manhattan. Each page should be 600–900 words, include local references (local crime stats, neighborhood names, borough-specific context), a local phone number if possible, and embedded Google Maps. These pages will rank for "[city] + remote monitoring" queries within 3–6 months of indexing.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="issue-card">
+        <div class="issue-header">
+          <div class="severity sev-high"></div>
+          <div class="issue-title">Reviews are on the website but not driving Google signals</div>
+        </div>
+        <div class="issue-body">
+          <p>Monitex has strong client testimonials on its own website, plus a 1-review Facebook page and a new Angi listing with no reviews. This is a missed opportunity. Google's local algorithm weighs review quantity and recency heavily. Clients are clearly happy — the testimonials on the site prove that — but they have not been directed to leave Google reviews.</p>
+          <div class="fix-block">
+            <div class="fix-label">Fix</div>
+            <p>Build a review generation system: send every new client a direct link to the Google Business Profile review page after their first successful month. Use WhatsApp (which Monitex already uses for client communication) to send a polite review request. Target 20+ Google reviews within 90 days. This single action will boost local pack rankings faster than most other changes.</p>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- SECTION 4: AUTHORITY -->
+  <div class="section">
+    <div class="section-tag"><span class="num">4</span> Authority & Backlinks</div>
+    <h2>Almost no one on the internet is linking to Monitex</h2>
+    <p class="section-intro">Backlinks are Google's primary trust signal. The fewer quality sites that link to you, the harder it is to rank for competitive keywords. Monitex's backlink profile is essentially nonexistent outside a handful of directory and social listings.</p>
+
+    <div class="issue-list">
+
+      <div class="issue-card">
+        <div class="issue-header">
+          <div class="severity sev-critical"></div>
+          <div class="issue-title">Near-zero referring domain count from quality sources</div>
+        </div>
+        <div class="issue-body">
+          <p>The visible backlink footprint for monitexsecurity.com consists primarily of directory listings (ZoomInfo, Crunchbase, BBB, Angi), the company's own social profiles, and one industry press piece (Business Management Review, July 2025). There are no links from news coverage, security industry publications, property management trade sites, real estate associations, or relevant local business sites. This puts Monitex's estimated Domain Rating in the 5–15 range — essentially starting from zero in Google's eyes when competing for non-branded queries.</p>
+          <div class="fix-block">
+            <div class="fix-label">Fix</div>
+            <p>Build links through three channels simultaneously: (1) Pitch security, property management, and real estate trade publications with data-backed articles — crime prevention statistics, cost of on-site guards vs virtual monitoring, case studies. (2) Get listed in relevant industry directories — ASIS International, BOMA (Building Owners and Managers Association), local chamber of commerce. (3) Pursue unlinked brand mentions — any publication that has mentioned Monitex without linking should be contacted for a link addition.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="issue-card">
+        <div class="issue-header">
+          <div class="severity sev-high"></div>
+          <div class="issue-title">No digital PR or media strategy</div>
+        </div>
+        <div class="issue-body">
+          <p>Monitex has genuinely compelling video content — real crime prevention footage from their monitoring team. This content is being used on LinkedIn and Facebook but has not been pitched to media. Local news outlets regularly run security-related stories. A single placement in a New York real estate, property management, or local news publication would deliver both a quality backlink and brand exposure to the target audience.</p>
+          <div class="fix-block">
+            <div class="fix-label">Fix</div>
+            <p>Develop a media outreach plan. Identify 15–20 journalists covering NYC real estate, property management, and local crime prevention. Pitch specific story angles: "Brooklyn security firm catches over 300 would-be burglars in one year," "The real cost of not having surveillance on your construction site," "Property managers share why they switched from guards to virtual monitoring." Each placement earns a backlink and drives referral traffic from a highly relevant audience.</p>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- SECTION 5: COMPETITIVE ANALYSIS -->
+  <div class="section">
+    <div class="section-tag"><span class="num">5</span> Competitive Intelligence</div>
+    <h2>What the competition is doing that Monitex is not</h2>
+    <p class="section-intro">The four competitors named cover a wide spectrum from national giants to regional players. Here is where each one is beating Monitex in organic search — and where Monitex actually has a credible advantage it is not leveraging.</p>
+
+    <table class="comp-table">
+      <thead>
+        <tr>
+          <th>Competitor</th>
+          <th>SEO Strengths</th>
+          <th>What they lack vs Monitex</th>
+          <th>Threat level</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>ECAM (formerly Stealth)</td>
+          <td>National authority, massive backlink profile, industry-first AI narrative, 140,000+ camera footprint gives them PR coverage. Deep content library. GardaWorld corporate backing = trust signals across the board.</td>
+          <td>They are a national enterprise — impersonal, no free trial, no "we answer within the hour" positioning. High price point. Small property managers feel like a number. Monitex wins on responsiveness and personal service.</td>
+          <td><span class="pill pill-red">High</span></td>
+        </tr>
+        <tr>
+          <td>Deep Sentinel</td>
+          <td>Strong blog content, product-led SEO (DIY camera angle draws residential traffic), robust FAQ and comparison pages targeting competitor keywords. Reviews aggregated on major platforms. Fast response time claim (30 seconds) is central to their messaging.</td>
+          <td>Primarily residential-focused, DIY install, not commercial. No virtual doorman product. No construction-site depth. They cannot easily address multi-family or high-rise needs. Monitex's commercial specialization is a real differentiator here.</td>
+          <td><span class="pill pill-amber">Medium</span></td>
+        </tr>
+        <tr>
+          <td>Pro-Vigil</td>
+          <td>Five Diamond CSAA certification prominently featured (trust signal). Deep industry vertical pages (scrap metal, auto dealers, construction). Comprehensive FAQ section. Strong domain authority. Clear response time claim (18 seconds average).</td>
+          <td>Texas-based, less presence in Northeast. No free trial mentioned. More enterprise/industrial positioning — less accessible to smaller property owners. No virtual doorman or residential building service depth.</td>
+          <td><span class="pill pill-amber">Medium</span></td>
+        </tr>
+        <tr>
+          <td>Live Lion (New York)</td>
+          <td>Direct competitor in Monitex's exact market (NYC). Claims "#1 in New York." $1M insurance guarantee front and center. Video testimonials and case study episodes page. Has local market understanding. Shift-rotation messaging addresses a specific buyer concern.</td>
+          <td>Website design and content are also relatively thin. No structured data visible. Blog is inactive. Domain appears weaker than national players. Monitex can outrank them with focused local SEO investment. This is the most directly winnable competitor.</td>
+          <td><span class="pill pill-red">High (local)</span></td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="callout">
+      <p><strong>The key insight:</strong> No competitor is owning the "personal service + commercial-grade monitoring" positioning for the New York multi-family and small commercial market. ECAM/Stealth is too corporate. Deep Sentinel is too residential. Pro-Vigil is too Texas. Live Lion is the closest competitor but weak on content. This is Monitex's lane — and they are not occupying it in search.</p>
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- SECTION 6: KEYWORD GAPS -->
+  <div class="section">
+    <div class="section-tag"><span class="num">6</span> Keyword Gaps</div>
+    <h2>High-intent searches that Monitex is not capturing</h2>
+    <p class="section-intro">These are the keywords where buyers are actively looking for exactly what Monitex offers. The site currently ranks for none of these in any meaningful position.</p>
+
+    <table class="kw-table">
+      <thead>
+        <tr>
+          <th style="width:260px">Keyword</th>
+          <th style="width:90px">Intent</th>
+          <th style="width:90px">Priority</th>
+          <th>Target page</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>remote video monitoring New York</td>
+          <td><span class="pill pill-red">Commercial</span></td>
+          <td><span class="pill pill-red">Critical</span></td>
+          <td>Homepage + New York location page</td>
+        </tr>
+        <tr>
+          <td>live surveillance monitoring service NYC</td>
+          <td><span class="pill pill-red">Commercial</span></td>
+          <td><span class="pill pill-red">Critical</span></td>
+          <td>Homepage / How It Works page</td>
+        </tr>
+        <tr>
+          <td>virtual security guard for apartment building</td>
+          <td><span class="pill pill-red">Commercial</span></td>
+          <td><span class="pill pill-red">Critical</span></td>
+          <td>Residential Buildings page (expanded)</td>
+        </tr>
+        <tr>
+          <td>construction site security monitoring</td>
+          <td><span class="pill pill-red">Commercial</span></td>
+          <td><span class="pill pill-red">Critical</span></td>
+          <td>Construction page (expanded)</td>
+        </tr>
+        <tr>
+          <td>virtual doorman service New York</td>
+          <td><span class="pill pill-red">Commercial</span></td>
+          <td><span class="pill pill-red">Critical</span></td>
+          <td>New dedicated service page</td>
+        </tr>
+        <tr>
+          <td>how much does remote video monitoring cost</td>
+          <td><span class="pill pill-amber">Informational</span></td>
+          <td><span class="pill pill-amber">High</span></td>
+          <td>Blog post / FAQ page</td>
+        </tr>
+        <tr>
+          <td>virtual guard vs security guard cost</td>
+          <td><span class="pill pill-amber">Informational</span></td>
+          <td><span class="pill pill-amber">High</span></td>
+          <td>Blog comparison post</td>
+        </tr>
+        <tr>
+          <td>live camera monitoring for car dealerships</td>
+          <td><span class="pill pill-red">Commercial</span></td>
+          <td><span class="pill pill-amber">High</span></td>
+          <td>Car Dealerships page (expanded)</td>
+        </tr>
+        <tr>
+          <td>remote security monitoring for warehouses</td>
+          <td><span class="pill pill-red">Commercial</span></td>
+          <td><span class="pill pill-amber">High</span></td>
+          <td>Warehouses page (expanded)</td>
+        </tr>
+        <tr>
+          <td>cannabis dispensary security camera monitoring</td>
+          <td><span class="pill pill-red">Commercial</span></td>
+          <td><span class="pill pill-blue">Medium</span></td>
+          <td>Cannabis page (new vertical)</td>
+        </tr>
+        <tr>
+          <td>security monitoring for squatter prevention</td>
+          <td><span class="pill pill-amber">Informational</span></td>
+          <td><span class="pill pill-amber">High</span></td>
+          <td>Blog post (unique angle for NYC landlords)</td>
+        </tr>
+        <tr>
+          <td>package theft prevention apartment building</td>
+          <td><span class="pill pill-amber">Informational</span></td>
+          <td><span class="pill pill-amber">High</span></td>
+          <td>Blog post → Residential page</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <hr class="divider">
+
+  <!-- SECTION 7: CONTENT & UX GAPS -->
+  <div class="section">
+    <div class="section-tag"><span class="num">7</span> Content & Trust Gaps</div>
+    <h2>Assets Monitex has but is not using — and what competitors are doing instead</h2>
+    <p class="section-intro">This section covers what is missing from the site that a high-converting B2B security website in this niche needs to have.</p>
+
+    <div class="opp-grid">
+
+      <div class="opp-card">
+        <span class="opp-icon">🏆</span>
+        <h4>No credentialing or certification displayed</h4>
+        <p>Monitex was recognized as "Top Remote Video Surveillance Solution 2025" by Business Management Review. This is nowhere prominent on the website. Pro-Vigil leads with its Five Diamond CSAA certification on the homepage. Trust signals need to be front and center, not buried.</p>
+      </div>
+
+      <div class="opp-card">
+        <span class="opp-icon">📊</span>
+        <h4>Stats on homepage lack credibility framing</h4>
+        <p>The homepage shows counters for "crimes deterred" and "perpetrators arrested" — but the numbers appear to start from zero as animations. There is no sourcing, no time frame stated. Buyers who are skeptical need anchored, specific numbers: "312 crimes prevented in 2024 across 47 properties."</p>
+      </div>
+
+      <div class="opp-card">
+        <span class="opp-icon">📋</span>
+        <h4>No pricing page or ballpark cost guidance</h4>
+        <p>Every competitor mentions the "60–70% cheaper than guards" figure — and Monitex mentions it too. But no page on the site gives buyers any framework for what to expect to pay. A pricing page (even one saying "contact for custom quote") signals transparency and ranks for cost-related searches.</p>
+      </div>
+
+      <div class="opp-card">
+        <span class="opp-icon">🎬</span>
+        <h4>Video content exists but is not SEO-optimized</h4>
+        <p>The crime prevention clips on LinkedIn and the media library are engaging. But videos on the website are not given title tags, descriptions, or transcripts. YouTube SEO for these clips ("thief caught on camera New York construction site") could drive significant traffic and brand awareness independently.</p>
+      </div>
+
+      <div class="opp-card">
+        <span class="opp-icon">🗺</span>
+        <h4>No case studies or client success stories formatted for SEO</h4>
+        <p>The testimonials are good but short. Deep Sentinel and Pro-Vigil publish full case studies: "How we helped [property type] reduce theft by X%." These rank for industry-specific searches and give the sales team a leave-behind. Monitex has the stories — the Business Management Review article proves it — they just need to be formatted correctly.</p>
+      </div>
+
+      <div class="opp-card">
+        <span class="opp-icon">🔒</span>
+        <h4>Insurance and liability claims not substantiated</h4>
+        <p>The site mentions Monitex is "fully insured" but gives no details. Live Lion leads with "$1 million guarantee." Buyers in the commercial space care deeply about this. A clear insurance page or callout explaining coverage limits, bonding, and liability policy would remove a major objection and improve conversion.</p>
+      </div>
+
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- CLOSING -->
+  <div class="section">
+    <div class="section-tag"><span class="num">8</span> Bottom Line</div>
+    <h2>What this adds up to</h2>
+    <p class="section-intro">Monitex is a proven, growing business with real results and happy clients. The SEO situation is not a sign the business is failing — it is a sign the business has been growing through referrals and outbound sales, and has not yet needed SEO. That changes as competition intensifies and buyers increasingly research online before calling anyone.</p>
+
+    <div class="issue-list">
+      <div class="issue-card">
+        <div class="issue-header">
+          <div class="severity sev-critical"></div>
+          <div class="issue-title">The opportunity cost of inaction is compounding</div>
+        </div>
+        <div class="issue-body">
+          <p>Every month that passes without SEO investment is a month that ECAM, Pro-Vigil, and Live Lion are building backlinks, publishing content, and collecting Google reviews. Authority is not built overnight — which means the sooner work starts, the sooner results compound.</p>
+          <p>The good news: because Monitex is starting from a low baseline, even moderate investment in the areas identified above will produce visible ranking movement within 60–90 days. The easiest wins (GBP optimization, review generation, title tag fixes, schema markup) can be implemented in under two weeks and will produce measurable local search improvement within 30 days.</p>
+        </div>
+      </div>
+    </div>
+
+    <div style="margin-top:32px; padding:28px 32px; background:#fff; border-radius:12px; border:1px solid var(--paper-3);">
+      <p style="font-family:var(--mono); font-size:10px; letter-spacing:0.1em; text-transform:uppercase; color:var(--ink-3); margin-bottom:16px;">Priority action list — first 30 days</p>
+      <ol style="padding-left:20px; display:flex; flex-direction:column; gap:10px;">
+        <li style="font-size:14px; color:var(--ink-2);"><strong style="color:var(--ink);">Claim and fully optimize Google Business Profile</strong> — this is the single highest-ROI action available.</li>
+        <li style="font-size:14px; color:var(--ink-2);"><strong style="color:var(--ink);">Fix the robots.txt crawl issue</strong> — nothing else matters if Google cannot crawl the site reliably.</li>
+        <li style="font-size:14px; color:var(--ink-2);"><strong style="color:var(--ink);">Rewrite all page title tags and meta descriptions</strong> with keyword-targeted, location-aware copy.</li>
+        <li style="font-size:14px; color:var(--ink-2);"><strong style="color:var(--ink);">Implement schema markup</strong> — LocalBusiness, Review, and FAQPage schemas site-wide.</li>
+        <li style="font-size:14px; color:var(--ink-2);"><strong style="color:var(--ink);">Launch a Google review campaign</strong> — contact all existing clients via WhatsApp with a direct review link. Target 20 reviews in 60 days.</li>
+        <li style="font-size:14px; color:var(--ink-2);"><strong style="color:var(--ink);">Run a PageSpeed audit</strong> on all key pages and fix critical performance issues. Target sub-2.5s LCP on mobile.</li>
+        <li style="font-size:14px; color:var(--ink-2);"><strong style="color:var(--ink);">Publish 4–6 keyword-targeted blog posts</strong> hitting the high-priority informational queries above.</li>
+      </ol>
+    </div>
+  </div>
+
+</div>
+
+<!-- FOOTER -->
+<div class="footer">
+  <div><strong>monitexsecurity.com</strong> — Full SEO Audit</div>
+  <div>Confidential · May 2026 · Prepared by John Matthew Maneja, SEO Specialist</div>
+</div>
+
+</body>
+</html>
